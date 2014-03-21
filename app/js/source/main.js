@@ -1,4 +1,4 @@
-/* jshint camelcase:false */
+/* jshint camelcase:false, loopfunc: true */
 
 (function(){
 
@@ -7,45 +7,33 @@
   $(document).ready(initialize);
 
   function initialize(){
-    $('#location').click(getLocation);
-    $('#weather').click(getWeather);
+    $('#getPhotos').click(getPhotos);
+    $('.frame').hide();
   }
 
-  function getLocation() {
-    navigator.geolocation.getCurrentPosition(function(position) {
-      $('.modal-body p').text(position.coords.latitude +', '+position.coords.longitude);
+  function getPhotos(){
+    $.ajax({
+      type: 'GET',
+      dataType: 'jsonp',
+      cache: false,
+      url: 'https://api.instagram.com/v1/tags/nashvillefood/media/recent?client_id=bc1a82e4c61a4ecbb3be6f354b2aba8f',
+      success: function(data) {
+        console.log(data);
+        for (var i = 0; i < 18; i++) {
+          var $div = $('<div>').css('background-image', 'url('+data.data[i].images.thumbnail.url+')').addClass('frame');
+          //var $link = $('<a href=' + data.data[i].link + '></a>');
+          $('#target').append($div);
+          //$('#target').append('<img src=' + data.data[i].images.thumbnail.url+ ' />');
+        }
+      }
     });
+    imgFade();
   }
 
-  function getWeather() {
-    debugger;
-    var url = 'https://api.wunderground.com/api/57ade16c229bf559/conditions/q/autoip.json?callback=?';
-    $.getJSON(url, receive);
+  function imgFade() {
+    $('#target .frame').first().appendTo('#target').fadeOut(10000);
+    $('#target .frame').first().fadeIn(10000);
+    setTimeout(imgFade, 14000);
   }
-
-  function receive(data) {
-    var $div = $('<div>');
-    debugger;
-    console.log(data);
-    console.log(data.current_observation.temperature_string);
-    console.log(data.current_observation.weather);
-    console.log(data.current_observation.display_location.full);
-    console.log(data.current_observation.icon_url);
-    console.log(data.current_observation.icon);
-    console.log(data.current_observation.observation_time);
-    
-    $div.addClass('weatherBox');
-    $div.append($('<img>').attr('src', data.current_observation.icon_url).addClass('weatherIconBox'));
-    $div.append($('<br>'));
-    $div.append($('<span>').text(data.current_observation.display_location.full));
-    $div.append($('<br>'));
-    $div.append($('<span>').text(data.current_observation.weather));
-    $div.append($('<br>'));
-    $div.append($('<span>').text(data.current_observation.temperature_string));
-    $div.append($('<br>'));
-    $div.append($('<span>').text(data.current_observation.observation_time));
-    $div.append($('<br>'));
-    $('#weatherModalBody').append($div);
-  }
+  imgFade();
 })();
-
